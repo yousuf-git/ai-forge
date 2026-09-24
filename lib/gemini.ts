@@ -125,7 +125,7 @@ export async function analyzeResumeWithGemini(
   preferredModel?: string
 ): Promise<AnalysisResult> {
   // Model priority list - use preferred model first if specified
-  let models = GEMINI_FALLBACK_CHAIN.map((name, i) => ({
+  let models: { name: string; label: string }[] = GEMINI_FALLBACK_CHAIN.map((name, i) => ({
     name,
     label: i === 0 ? 'Primary' : `Fallback ${i}`,
   }));
