@@ -4,17 +4,24 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Model configuration with rate limits
 export const GEMINI_MODELS = [
+  { name: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash', rateLimit: 30, description: 'Latest flash model (default)' },
   { name: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', rateLimit: 30, description: 'Balanced speed and quality' },
-  { name: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite', rateLimit: 15, description: 'Fastest, lightweight' },
+  { name: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash Lite', rateLimit: 30, description: 'Fastest, lightweight' },
   { name: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite', rateLimit: 30, description: 'Fast, lightweight' },
-  { name: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', rateLimit: 30, description: 'Balanced' },
   { name: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', rateLimit: 10, description: 'Highest quality (slowest)' },
-  { name: 'gemini-3-flash-preview', label: 'Gemini 3 Flash', rateLimit: 30, description: 'Latest flash model (default)' },
   { name: 'gemini-3-pro-preview', label: 'Gemini 3 Pro Preview', rateLimit: 15, description: 'Next-gen pro model' },
   { name: 'gemma-3-27b-it', label: 'Gemma 3 27B', rateLimit: 20, description: 'Large model, high quality' },
   { name: 'gemma-3-12b-it', label: 'Gemma 3 12B', rateLimit: 30, description: 'Medium model, balanced' },
   { name: 'gemma-3-4b-it', label: 'Gemma 3 4B', rateLimit: 14, description: 'Small model, fast' },
   { name: 'gemma-3-1b-it', label: 'Gemma 3 1B', rateLimit: 15, description: 'Smallest model, fastest' },
+] as const;
+
+/** Shared fallback order used when a preferred model fails. */
+export const GEMINI_FALLBACK_CHAIN = [
+  'gemini-3.6-flash',
+  'gemini-2.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash-lite',
 ] as const;
 
 export interface AnalysisResult {
@@ -62,11 +69,14 @@ function handleGeminiError(error: any, modelName: string): { shouldRetry: boolea
     };
   }
   
-  // 404 - NOT_FOUND
-  if (status === 404 || errorMsg.includes('NOT_FOUND') || errorMsg.includes('not found')) {
+  // 404 - NOT_FOUND / retired model — fall through to the next model in the chain
+  if (
+    status === 404 ||
+    /NOT_FOUND|not found|no longer available/i.test(errorMsg)
+  ) {
     return {
-      shouldRetry: false,
-      userMessage: `Model "${modelName}" not found. This model may not be available in your API version. Please try a different model.`
+      shouldRetry: true,
+      userMessage: `Model "${modelName}" is unavailable. Trying fallback model...`
     };
   }
   
@@ -115,12 +125,10 @@ export async function analyzeResumeWithGemini(
   preferredModel?: string
 ): Promise<AnalysisResult> {
   // Model priority list - use preferred model first if specified
-  let models = [
-    { name: 'gemini-2.5-flash', label: 'Primary' },
-    { name: 'gemini-2.0-flash-lite', label: 'Fallback 1' },
-    { name: 'gemini-2.5-flash-lite', label: 'Fallback 2' },
-    { name: 'gemini-2.0-flash', label: 'Fallback 3' },
-  ];
+  let models = GEMINI_FALLBACK_CHAIN.map((name, i) => ({
+    name,
+    label: i === 0 ? 'Primary' : `Fallback ${i}`,
+  }));
   
   // If user selected a preferred model, try it first
   if (preferredModel) {

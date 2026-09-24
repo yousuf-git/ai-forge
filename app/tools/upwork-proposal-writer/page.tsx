@@ -53,7 +53,7 @@ export default function UpworkProposalWriter() {
   const [jobDescription, setJobDescription] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [preferredModel, setPreferredModel] = useState<string>(
-    GEMINI_MODELS.find(m => m.name === 'gemini-3-flash-preview')?.name ?? GEMINI_MODELS[0].name
+    GEMINI_MODELS.find(m => m.name === 'gemini-3.6-flash')?.name ?? GEMINI_MODELS[0].name
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string>("");

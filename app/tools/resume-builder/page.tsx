@@ -16,7 +16,7 @@ import Wizard from "./components/Wizard";
 import Catalogue from "./components/Catalogue";
 import "./resume-preview.css";
 
-const DEFAULT_MODEL = GEMINI_MODELS.find((m) => m.name === "gemini-3-flash-preview")?.name ?? GEMINI_MODELS[0].name;
+const DEFAULT_MODEL = GEMINI_MODELS.find((m) => m.name === "gemini-3.6-flash")?.name ?? GEMINI_MODELS[0].name;
 
 const emptyWizard: WizardState = { jobDescription: "", step: 0, raw: {}, tweaks: {} };
 

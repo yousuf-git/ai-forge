@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GEMINI_FALLBACK_CHAIN } from "@/lib/gemini";
 import type { ResumeTask } from "@/lib/resume/types";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Fallback chain — preferred model first, then higher-rate-limit fallbacks.
-const FALLBACK_CHAIN = [
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.5-flash-lite",
-];
+const FALLBACK_CHAIN = [...GEMINI_FALLBACK_CHAIN];
 
 const SYSTEM_RULES = `You are an expert technical resume writer.
 Hard rules you must never break:
@@ -130,10 +126,11 @@ function isRetryable(error: any): boolean {
   const msg = error?.message || "";
   const status = error?.status || 0;
   return (
+    status === 404 ||
     status === 429 ||
     status === 500 ||
     status === 503 ||
-    /RESOURCE_EXHAUSTED|quota|INTERNAL|UNAVAILABLE|overloaded|429|500|503/i.test(msg)
+    /RESOURCE_EXHAUSTED|quota|INTERNAL|UNAVAILABLE|overloaded|NOT_FOUND|not found|no longer available|429|500|503|404/i.test(msg)
   );
 }
 

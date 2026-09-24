@@ -38,7 +38,7 @@ Core design points, grounded in the code:
 
 - Each tool is a route under `app/tools/` and is independently developed and maintained.
 - All AI calls go through Next.js **API routes** (`app/api/*`), which hold the Gemini client server-side.
-- Gemini requests use a **model fallback chain** (`gemini-3-flash-preview` → `gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`), so a rate-limited or unavailable model degrades gracefully instead of failing.
+- Gemini requests use a **model fallback chain** (`gemini-3.6-flash` → `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite`), so a rate-limited or unavailable model degrades gracefully instead of failing.
 - The UI is built on ShadCN-style components (Radix primitives), Tailwind, Framer Motion animations, and light/dark theming via `next-themes`.
 
 ## <img src="https://api.iconify.design/lucide/sparkles.svg?color=%236e7681&width=22" /> Tools
@@ -75,7 +75,7 @@ flowchart LR
   Home["Homepage (app/page.tsx)"] --> Tool["Tool page (app/tools/*)"]
   Tool -->|POST JSON| API["API route (app/api/*)"]
   API --> Gemini["Gemini client (@google/generative-ai)"]
-  Gemini -->|fallback chain| Models["gemini-3-flash → 2.5-flash → 2.0-flash → 2.5-pro"]
+  Gemini -->|fallback chain| Models["gemini-3.6-flash → 2.5-flash → 3.5-flash-lite → 2.5-flash-lite"]
   API -->|structured JSON| Tool
   PDF["pdfjs-dist"] -.client-side text.-> Tool
 ```

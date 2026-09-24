@@ -11,9 +11,9 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 // Gemini models with fallback support
 const GEMINI_MODELS = [
-  'gemini-3-flash-preview',
+  'gemini-3.6-flash',
   'gemini-2.5-flash',
-  'gemini-2.0-flash',
+  'gemini-3.5-flash-lite',
   'gemini-2.5-pro',
 ];
 
@@ -361,10 +361,17 @@ Generate a compelling Upwork proposal now.`;
       console.error(`Error with model ${modelName}:`, error.message);
       lastError = error;
 
-      // If it's a retryable error (rate limit, server error, model not found), try the next model
+      // Retry on rate limit, overload, or retired/missing model
       const status = error?.status || error?.response?.status;
-      if (status === 429 || status === 503 || status === 500 || status === 404) {
-        console.log(`Model ${modelName} failed (${status}), trying next model...`);
+      const msg = error?.message || '';
+      if (
+        status === 429 ||
+        status === 503 ||
+        status === 500 ||
+        status === 404 ||
+        /no longer available|NOT_FOUND|not found/i.test(msg)
+      ) {
+        console.log(`Model ${modelName} failed (${status || 'unavailable'}), trying next model...`);
         continue;
       }
 

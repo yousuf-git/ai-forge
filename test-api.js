@@ -13,17 +13,17 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 async function testAPI() {
   try {
-    // Try with gemini-2.5-flash which is the primary model (10 RPM)
-    console.log('\nTrying gemini-2.5-flash model...');
-    let model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // Try with gemini-3.6-flash which is the primary model
+    console.log('\nTrying gemini-3.6-flash model...');
+    let model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
     
     let result = await model.generateContent('Say "API is working!" in a single sentence.');
     let response = await result.response;
     let text = response.text();
     
-    console.log('✅ Success with gemini-2.5-flash! Response:', text);
+    console.log('✅ Success with gemini-3.6-flash! Response:', text);
     console.log('\n✅ Your Gemini API key is working correctly!');
-    console.log('✅ Use model: "gemini-2.5-flash" in your code');
+    console.log('✅ Use model: "gemini-3.6-flash" in your code');
   } catch (error) {
     console.error('\n❌ Error:', error.message);
     if (error.status) {
